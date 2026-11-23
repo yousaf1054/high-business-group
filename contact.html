@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contact Zesty Foods by phone, email or WhatsApp.">
+  <title>Contact | Zesty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header"><div class="container nav-wrap">
+    <a class="brand" href="index.html" aria-label="Zesty home"><span class="brand-mark"><span>fork</span></span><span>Zesty</span></a>
+    <nav class="nav-links" id="navLinks" aria-label="Main navigation"><a href="index.html">Home</a><a href="products.html">Products</a><a href="about.html">About Us</a><a class="active" href="contact.html">Contact</a></nav>
+    <div class="nav-actions"><button class="cart-button" id="openCart" type="button" aria-label="Open cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l2.3 9.2a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 1.9-1.4L21 8H6"></path><circle cx="9" cy="19" r="1"></circle><circle cx="17" cy="19" r="1"></circle></svg><span class="cart-count" id="cartCount">0</span></button><a class="nav-order" href="order.html">Order Now</a><button class="menu-button" id="menuButton" type="button" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
+  </div></header>
+  <main>
+    <section class="page-hero"><div class="container"><span class="eyebrow-text">WE'RE HERE TO HELP</span><h1>Let's talk food.</h1><p>Questions, feedback or a special request? Send us a message and we'll be happy to help.</p></div></section>
+    <section class="contact-section contact-page"><div class="container contact-grid">
+      <div><span class="eyebrow-text">GET IN TOUCH</span><h2>We'd Love To Hear From You</h2><p>Reach our team by phone, email or WhatsApp.</p><div class="contact-details">
+        <a href="tel:+917356766905"><span>☎</span><div><small>Phone</small><strong>+91 73567 66905</strong></div></a>
+        <a href="https://wa.me/917356766905" target="_blank" rel="noopener"><span>◉</span><div><small>WhatsApp</small><strong>Chat with us</strong></div></a>
+        <a href="mailto:hello@zestyfoods.com"><span>✉</span><div><small>Email</small><strong>hello@zestyfoods.com</strong></div></a>
+      </div></div>
+      <form class="contact-form" id="contactForm"><input type="text" name="name" placeholder="Your name" required><input type="tel" name="phone" placeholder="Phone number" required><textarea name="message" rows="5" placeholder="How can we help?" required></textarea><button class="button button-primary" type="submit">Send Message <span>→</span></button></form>
+    </div></section>
+  </main>
+  <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark"><span>fork</span></span><span>Zesty</span></a><p>Fresh food, fast delivery and happy moments every day.</p></div><div><h3>Company</h3><a href="about.html">About Us</a><a href="products.html">Our Menu</a><a href="contact.html">Contact</a></div><div><h3>Support</h3><a href="contact.html">Help Center</a><a href="contact.html">Contact us</a></div><div><h3>Newsletter</h3><p>Get tasty offers in your inbox.</p><form class="newsletter" id="newsletter"><input type="email" placeholder="Enter your email" required><button type="submit">→</button></form></div></div><div class="container footer-bottom"><span>© 2026 Zesty Foods. All rights reserved.</span><span>Made with ♥ for great food</span></div></footer>
+  <div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true"><div class="cart-header"><div><span>Your Order</span><h2>Shopping Cart</h2></div><button id="closeCart" type="button" aria-label="Close cart">×</button></div><div class="cart-items" id="cartItems"></div><div class="cart-empty" id="cartEmpty"><div>🛒</div><h3>Your cart is empty</h3><p>Add a few tasty items to get started.</p><a class="button button-primary" href="products.html">Explore Menu</a></div><div class="checkout" id="checkout"><div class="bill-line"><span>Subtotal</span><strong id="subtotal">₹0</strong></div><div class="bill-line"><span>Delivery</span><strong id="delivery">₹0</strong></div><div class="bill-line total"><span>Total</span><strong id="grandTotal">₹0</strong></div><a class="whatsapp-button checkout-link" href="order.html">Continue to Order</a></div></aside>
+  <div class="toast" id="toast" role="status"></div><script src="js/site.js"></script>
+</body>
+</html>

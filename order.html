@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Review your Zesty order and share the bill image and order details.">
+  <title>Order Now | Zesty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header"><div class="container nav-wrap">
+    <a class="brand" href="index.html" aria-label="Zesty home"><span class="brand-mark"><span>fork</span></span><span>Zesty</span></a>
+    <nav class="nav-links" id="navLinks" aria-label="Main navigation"><a href="index.html">Home</a><a href="products.html">Products</a><a href="about.html">About Us</a><a href="contact.html">Contact</a></nav>
+    <div class="nav-actions"><button class="cart-button" id="openCart" type="button" aria-label="Open cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l2.3 9.2a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 1.9-1.4L21 8H6"></path><circle cx="9" cy="19" r="1"></circle><circle cx="17" cy="19" r="1"></circle></svg><span class="cart-count" id="cartCount">0</span></button><a class="nav-order active" href="order.html">Order Now</a><button class="menu-button" id="menuButton" type="button" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
+  </div></header>
+  <main>
+    <section class="page-hero"><div class="container"><span class="eyebrow-text">JUST A FEW MORE STEPS</span><h1>Place Your Order</h1><p>Review your items, enter your details and share your bill image and order text.</p></div></section>
+    <section class="order-page-section"><div class="container order-page-grid">
+      <section class="order-card"><div class="order-card-heading"><div><span class="eyebrow-text">YOUR SELECTION</span><h2>Order Summary</h2></div><a href="products.html">+ Add products</a></div>
+        <div id="orderItems" class="order-items"></div>
+        <div id="orderEmpty" class="order-empty"><span>🛒</span><h3>Your cart is empty</h3><p>Explore the menu and add something tasty.</p><a class="button button-primary" href="products.html">Browse Products <span>→</span></a></div>
+        <div class="order-totals"><div class="bill-line"><span>Subtotal</span><strong id="orderSubtotal">₹0</strong></div><div class="bill-line"><span>Delivery</span><strong id="orderDelivery">₹0</strong></div><div class="bill-line total"><span>Total</span><strong id="orderGrandTotal">₹0</strong></div></div>
+      </section>
+      <section class="order-card"><span class="eyebrow-text">DELIVERY DETAILS</span><h2>Your Information</h2>
+        <form class="order-form" id="orderForm"><label>Your name<input type="text" name="customerName" placeholder="Enter your name" required></label><label>Phone number<input type="tel" name="customerPhone" placeholder="Enter your phone number" required></label><label>Delivery address<textarea name="address" rows="3" placeholder="Enter your full delivery address" required></textarea></label><label>Additional instructions <span>(optional)</span><textarea name="notes" rows="2" placeholder="Anything else we should know?"></textarea></label>
+          <button class="whatsapp-button" type="submit"><span>◉</span> Share Bill on WhatsApp</button>
+          <p class="bill-note">The share menu will send the bill image and order text together. Choose WhatsApp, select +91 73567 66905, then tap Send. No image download is needed.</p>
+        </form>
+      </section>
+    </div></section>
+  </main>
+  <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark"><span>fork</span></span><span>Zesty</span></a><p>Fresh food, fast delivery and happy moments every day.</p></div><div><h3>Company</h3><a href="about.html">About Us</a><a href="products.html">Our Menu</a><a href="contact.html">Contact</a></div><div><h3>Support</h3><a href="contact.html">Help Center</a><a href="contact.html">Contact us</a></div><div><h3>Newsletter</h3><p>Get tasty offers in your inbox.</p><form class="newsletter" id="newsletter"><input type="email" placeholder="Enter your email" required><button type="submit">→</button></form></div></div><div class="container footer-bottom"><span>© 2026 Zesty Foods. All rights reserved.</span><span>Made with ♥ for great food</span></div></footer>
+  <div class="overlay" id="overlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart" aria-hidden="true"><div class="cart-header"><div><span>Your Order</span><h2>Shopping Cart</h2></div><button id="closeCart" type="button" aria-label="Close cart">×</button></div><div class="cart-items" id="cartItems"></div><div class="cart-empty" id="cartEmpty"><div>🛒</div><h3>Your cart is empty</h3><p>Add a few tasty items to get started.</p><a class="button button-primary" href="products.html">Explore Menu</a></div><div class="checkout" id="checkout"><div class="bill-line"><span>Subtotal</span><strong id="subtotal">₹0</strong></div><div class="bill-line"><span>Delivery</span><strong id="delivery">₹0</strong></div><div class="bill-line total"><span>Total</span><strong id="grandTotal">₹0</strong></div><a class="whatsapp-button checkout-link" href="order.html">Continue to Order</a></div></aside>
+  <div class="toast" id="toast" role="status"></div><script src="js/site.js"></script>
+</body>
+</html>
