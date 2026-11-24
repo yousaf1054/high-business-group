@@ -163,8 +163,21 @@ async function uploadReceipt(req, res, siteUrl, cloudName) {
 
   if (!cloudinaryResponse.ok) {
     const detail = await cloudinaryResponse.text();
-    console.error("Cloudinary rejected a receipt upload.", cloudinaryResponse.status, detail);
-    return respondJson(res, 502, { error: "Receipt image storage rejected the upload." });
+    let providerMessage = "";
+    try {
+      const payload = JSON.parse(detail);
+      providerMessage = payload.error && payload.error.message;
+    } catch {
+      providerMessage = "";
+    }
+    providerMessage = typeof providerMessage === "string"
+      ? providerMessage.slice(0, 400)
+      : `Cloudinary returned HTTP ${cloudinaryResponse.status}.`;
+    console.error("Cloudinary rejected a receipt upload.", cloudinaryResponse.status, providerMessage);
+    return respondJson(res, 502, {
+      error: "Receipt image storage rejected the upload.",
+      details: providerMessage
+    });
   }
 
   return respondJson(res, 201, { receiptUrl: `${siteUrl}/api/receipt?id=${id}` });

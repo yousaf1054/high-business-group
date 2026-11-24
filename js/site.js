@@ -475,7 +475,10 @@ if (downloadAndOpenWhatsAppButton) {
       }
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Receipt upload failed.");
+      if (!response.ok) {
+        const detail = typeof result.details === "string" ? ` ${result.details}` : "";
+        throw new Error(`${result.error || "Receipt upload failed."}${detail}`);
+      }
 
       const receiptUrl = new URL(result.receiptUrl);
       const isLocalDevelopment = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
