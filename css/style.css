@@ -355,9 +355,6 @@ img { max-width: 100%; display: block; }
 .bill-preview-footer { flex: 0 0 auto; padding: 14px 22px 20px; }
 .bill-preview-footer p { margin: 0 0 12px; color: var(--muted); text-align: center; font-size: 11px; line-height: 1.5; }
 .bill-preview-footer .whatsapp-button { width: 100%; }
-.bill-preview-footer .receipt-public-note { color: #a53d2b; }
-.receipt-consent { display: flex !important; grid-template-columns: 18px 1fr; align-items: start; gap: 9px !important; padding: 11px 12px; border: 1px solid #f0e2da; border-radius: 9px; background: #fffaf7; color: #555 !important; font-size: 10px !important; line-height: 1.5; }
-.receipt-consent input { width: 16px; height: 16px; margin: 1px 0 0; accent-color: var(--orange); }
 
 @media (max-width: 480px) {
   .bill-preview-modal { padding: 8px; }

@@ -182,7 +182,7 @@ function wrapText(context, text, maxWidth) {
   return lines;
 }
 
-function drawBill(formData) {
+function drawBill() {
   const canvas = document.createElement("canvas");
   const width = 1000;
   const padding = 74;
@@ -190,22 +190,11 @@ function drawBill(formData) {
   const imageSize = 190;
   const firstRowY = 332;
   const summaryY = firstRowY + cart.length * rowHeight + 45;
+  const height = summaryY + 260;
   const right = width - padding;
   canvas.width = width;
-  canvas.height = 1;
-  let context = canvas.getContext("2d");
-  if (!context) throw new Error("This browser could not create the bill image.");
-  context.font = "500 22px Manrope, Arial, sans-serif";
-  const detailLines = [
-    `Name: ${formData.get("customerName")}`,
-    `Phone: ${formData.get("customerPhone")}`,
-    ...wrapText(context, `Address: ${formData.get("address")}`, width - padding * 2)
-  ];
-  const notes = String(formData.get("notes") || "").trim();
-  if (notes) detailLines.push(...wrapText(context, `Note: ${notes}`, width - padding * 2));
-  const height = summaryY + 390 + detailLines.length * 38;
   canvas.height = height;
-  context = canvas.getContext("2d");
+  const context = canvas.getContext("2d");
   if (!context) throw new Error("This browser could not create the bill image.");
 
   context.fillStyle = "#fff8f4";
@@ -344,13 +333,6 @@ function drawBill(formData) {
   context.stroke();
   context.setLineDash([]);
   drawTotalRow("Total", formatCurrency(subtotal + DELIVERY_FEE), summaryY + 215, true);
-
-  context.fillStyle = "#191923";
-  context.font = "700 24px Manrope, Arial, sans-serif";
-  context.fillText("DELIVERY DETAILS", padding, summaryY + 292);
-  context.fillStyle = "#555560";
-  context.font = "500 22px Manrope, Arial, sans-serif";
-  detailLines.forEach((line, index) => context.fillText(line, padding, summaryY + 334 + index * 38));
   return canvas;
 }
 
@@ -429,10 +411,11 @@ if (orderForm) {
 
     const formData = new FormData(orderForm);
     try {
-      const canvas = drawBill(formData);
+      const canvas = drawBill();
       pendingOrder = {
         image: canvas.toDataURL("image/png"),
-        message: makeOrderMessage(formData)
+        message: makeOrderMessage(formData),
+        filename: `zesty-order-bill-${Date.now()}.png`
       };
       billPreviewImage.src = pendingOrder.image;
       billPreviewModal.classList.add("show");
@@ -449,58 +432,24 @@ const closeBillPreviewButton = document.getElementById("closeBillPreview");
 const downloadAndOpenWhatsAppButton = document.getElementById("downloadAndOpenWhatsApp");
 if (closeBillPreviewButton) closeBillPreviewButton.addEventListener("click", closeBillPreview);
 if (downloadAndOpenWhatsAppButton) {
-  downloadAndOpenWhatsAppButton.addEventListener("click", async () => {
+  downloadAndOpenWhatsAppButton.addEventListener("click", () => {
     if (!pendingOrder) {
       showToast("Create a bill preview before continuing.");
       return;
     }
 
-    const whatsappWindow = window.open("about:blank", "_blank");
+    const download = document.createElement("a");
+    download.href = pendingOrder.image;
+    download.download = pendingOrder.filename;
+    document.body.appendChild(download);
+    download.click();
+    download.remove();
+
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(pendingOrder.message)}`;
+    closeBillPreview();
+    const whatsappWindow = window.open(whatsappUrl, "_blank");
     if (whatsappWindow) whatsappWindow.opener = null;
-    downloadAndOpenWhatsAppButton.disabled = true;
-    downloadAndOpenWhatsAppButton.textContent = "Uploading bill...";
-
-    try {
-      const response = await fetch("/api/receipt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: pendingOrder.image })
-      });
-      const contentType = response.headers.get("Content-Type") || "";
-      if (!contentType.includes("application/json")) {
-        if (response.status === 405) {
-          throw new Error("This server only serves static files. Stop Live Server and run `node dev-server.js` to enable hosted receipts.");
-        }
-        throw new Error(`Receipt server returned HTTP ${response.status}.`);
-      }
-
-      const result = await response.json();
-      if (!response.ok) {
-        const detail = typeof result.details === "string" ? ` ${result.details}` : "";
-        throw new Error(`${result.error || "Receipt upload failed."}${detail}`);
-      }
-
-      const receiptUrl = new URL(result.receiptUrl);
-      const isLocalDevelopment = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-      const isExpectedOrigin = receiptUrl.origin === window.location.origin ||
-        (isLocalDevelopment && receiptUrl.protocol === "https:");
-      if (!isExpectedOrigin || !/^\/api\/receipt\?id=[a-f0-9]{32}$/.test(receiptUrl.pathname + receiptUrl.search)) {
-        throw new Error("Receipt service returned an invalid link.");
-      }
-
-      const message = `${pendingOrder.message}\n\nView your bill: ${receiptUrl.href}`;
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-      closeBillPreview();
-      if (whatsappWindow) whatsappWindow.location.href = whatsappUrl;
-      else window.location.href = whatsappUrl;
-    } catch (error) {
-      if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
-      console.error("Could not upload the order bill.", error);
-      showToast(error.message || "Could not upload the bill. Please try again.");
-    } finally {
-      downloadAndOpenWhatsAppButton.disabled = false;
-      downloadAndOpenWhatsAppButton.innerHTML = "<span>◉</span> Upload Bill & Open WhatsApp";
-    }
+    else window.location.href = whatsappUrl;
   });
 }
 
