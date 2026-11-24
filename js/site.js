@@ -9,7 +9,7 @@ const products = [
 
 const CART_KEY = "zesty-cart";
 const DELIVERY_FEE = 40;
-const WHATSAPP_NUMBER = "9847710542";
+const WHATSAPP_NUMBER = "919847710542";
 const productGrid = document.getElementById("productGrid");
 const cartDrawer = document.getElementById("cartDrawer");
 const overlay = document.getElementById("overlay");
@@ -340,7 +340,7 @@ function makeOrderMessage(formData) {
   const subtotal = cartSubtotal();
   const lines = [
     "Hello Zesty! I would like to place an order.",
-    "Please send this order to +91 73567 66905:",
+    "Please send this order to +91 98477 10542:",
     "",
     ...cart.map(item => `• ${item.name} x ${item.quantity} — ${formatCurrency(item.price * item.quantity)}`),
     "",
