@@ -9,7 +9,7 @@ const products = [
 
 const CART_KEY = "zesty-cart";
 const DELIVERY_FEE = 40;
-const WHATSAPP_NUMBER = "917356766905";
+const WHATSAPP_NUMBER = "9847710542";
 const productGrid = document.getElementById("productGrid");
 const cartDrawer = document.getElementById("cartDrawer");
 const overlay = document.getElementById("overlay");
