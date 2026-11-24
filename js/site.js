@@ -17,6 +17,9 @@ const cartItems = document.getElementById("cartItems");
 const cartEmpty = document.getElementById("cartEmpty");
 const checkout = document.getElementById("checkout");
 const toast = document.getElementById("toast");
+const billPreviewModal = document.getElementById("billPreviewModal");
+const billPreviewImage = document.getElementById("billPreviewImage");
+let pendingOrder = null;
 
 function loadCart() {
   const saved = localStorage.getItem(CART_KEY);
@@ -100,7 +103,7 @@ function renderCart() {
   if (orderItems) {
     orderItems.innerHTML = cart.map(item => `
       <div class="order-item">
-        <img src="${item.image}" alt="${item.name}">
+        <img src="${item.image}" data-bill-product-id="${item.id}" crossorigin="anonymous" alt="${item.name}">
         <div class="order-item-info"><strong>${item.name}</strong><span>${formatCurrency(item.price)} each</span>
           <div class="quantity"><button type="button" data-minus="${item.id}" aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button type="button" data-plus="${item.id}" aria-label="Increase quantity">+</button></div>
         </div><strong class="order-item-total">${formatCurrency(item.price * item.quantity)}</strong>
@@ -155,6 +158,13 @@ function showToast(message) {
   showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2800);
 }
 
+function closeBillPreview() {
+  if (!billPreviewModal) return;
+  billPreviewModal.classList.remove("show");
+  billPreviewModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("locked");
+}
+
 function wrapText(context, text, maxWidth) {
   const words = String(text).split(/\s+/);
   const lines = [];
@@ -175,115 +185,172 @@ function wrapText(context, text, maxWidth) {
 function drawBill(formData) {
   const canvas = document.createElement("canvas");
   const width = 1000;
-  const padding = 72;
-  const itemHeight = 86;
+  const padding = 74;
+  const rowHeight = 270;
+  const imageSize = 190;
+  const firstRowY = 332;
+  const summaryY = firstRowY + cart.length * rowHeight + 45;
+  const right = width - padding;
   canvas.width = width;
   canvas.height = 1;
   let context = canvas.getContext("2d");
   if (!context) throw new Error("This browser could not create the bill image.");
-  context.font = "500 19px Manrope, Arial, sans-serif";
-  const addressLines = wrapText(context, `Address: ${formData.get("address")}`, width - padding * 2);
+  context.font = "500 22px Manrope, Arial, sans-serif";
+  const detailLines = [
+    `Name: ${formData.get("customerName")}`,
+    `Phone: ${formData.get("customerPhone")}`,
+    ...wrapText(context, `Address: ${formData.get("address")}`, width - padding * 2)
+  ];
   const notes = String(formData.get("notes") || "").trim();
-  const notesLines = notes ? wrapText(context, `Note: ${notes}`, width - padding * 2) : [];
-  const detailLineCount = 2 + addressLines.length + notesLines.length;
-  canvas.height = 1000 + cart.length * itemHeight + detailLineCount * 32;
+  if (notes) detailLines.push(...wrapText(context, `Note: ${notes}`, width - padding * 2));
+  const height = summaryY + 390 + detailLines.length * 38;
+  canvas.height = height;
   context = canvas.getContext("2d");
   if (!context) throw new Error("This browser could not create the bill image.");
 
   context.fillStyle = "#fff8f4";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, width, height);
   context.fillStyle = "#ffffff";
-  context.beginPath();
-  context.roundRect(32, 32, width - 64, canvas.height - 64, 28);
-  context.fill();
-  context.fillStyle = "#f04f35";
-  context.beginPath();
-  context.roundRect(32, 32, width - 64, 230, [28, 28, 0, 0]);
-  context.fill();
-
-  context.fillStyle = "#ffffff";
-  context.font = "800 54px Manrope, Arial, sans-serif";
-  context.fillText("ZESTY", padding, 112);
-  context.font = "600 24px Manrope, Arial, sans-serif";
-  context.fillText("YOUR ORDER BILL", padding, 158);
-  context.font = "500 18px Manrope, Arial, sans-serif";
-  context.fillText(new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }), padding, 204);
-
-  let y = 316;
-  const right = width - padding;
-  context.fillStyle = "#191923";
-  context.font = "800 22px Manrope, Arial, sans-serif";
-  context.fillText("ITEM", padding, y);
-  context.textAlign = "right";
-  context.fillText("AMOUNT", right, y);
-  context.textAlign = "left";
-  y += 28;
-  context.strokeStyle = "#eee5df";
+  context.strokeStyle = "#f0e7e2";
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(padding, y);
-  context.lineTo(right, y);
+  context.roundRect(8, 8, width - 16, height - 16, 40);
+  context.fill();
   context.stroke();
-  y += 42;
 
-  cart.forEach(item => {
+  context.fillStyle = "#f04f35";
+  context.font = "800 26px Manrope, Arial, sans-serif";
+  context.fillText("YOUR SELECTION", padding, 120);
+  context.fillStyle = "#191923";
+  context.font = "700 54px Manrope, Arial, sans-serif";
+  context.fillText("Order Summary", padding, 208);
+
+  cart.forEach((item, index) => {
+    const y = firstRowY + index * rowHeight;
+    const image = document.querySelector(`[data-bill-product-id="${item.id}"]`);
+    const imageX = padding;
+    const imageY = y;
+
+    context.save();
+    context.beginPath();
+    context.roundRect(imageX, imageY, imageSize, imageSize, 28);
+    context.clip();
+    if (image && image.complete && image.naturalWidth > 0) {
+      const scale = Math.max(imageSize / image.naturalWidth, imageSize / image.naturalHeight);
+      const cropWidth = imageSize / scale;
+      const cropHeight = imageSize / scale;
+      context.drawImage(
+        image,
+        (image.naturalWidth - cropWidth) / 2,
+        (image.naturalHeight - cropHeight) / 2,
+        cropWidth,
+        cropHeight,
+        imageX,
+        imageY,
+        imageSize,
+        imageSize
+      );
+    } else {
+      const icon = { Pizza: "🍕", Asian: "🍜", Burgers: "🍔", Desserts: "🍰", Drinks: "🥤" }[item.category] || "🍽";
+      context.fillStyle = "#fff0e9";
+      context.fillRect(imageX, imageY, imageSize, imageSize);
+      context.font = "80px Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(icon, imageX + imageSize / 2, imageY + imageSize / 2);
+      context.textAlign = "left";
+      context.textBaseline = "alphabetic";
+    }
+    context.restore();
+
+    const textX = padding + imageSize + 32;
     context.fillStyle = "#191923";
-    context.font = "700 22px Manrope, Arial, sans-serif";
-    const nameLines = wrapText(context, item.name, 620);
-    nameLines.forEach((line, index) => context.fillText(line, padding, y + index * 30));
-    context.fillStyle = "#686875";
-    context.font = "500 18px Manrope, Arial, sans-serif";
-    context.fillText(`${item.quantity} x ${formatCurrency(item.price)}`, padding, y + nameLines.length * 30 + 2);
+    context.font = "700 30px Manrope, Arial, sans-serif";
+    const nameLines = wrapText(context, item.name, right - textX - 185);
+    nameLines.forEach((line, lineIndex) => context.fillText(line, textX, y + 42 + lineIndex * 38));
+
+    context.fillStyle = "#777783";
+    context.font = "500 23px Manrope, Arial, sans-serif";
+    context.fillText(`${formatCurrency(item.price)} each`, textX, y + 92);
+
+    const controlY = y + 158;
+    const drawQuantityCircle = (x, label) => {
+      context.beginPath();
+      context.arc(x, controlY, 34, 0, Math.PI * 2);
+      context.fillStyle = "#ffffff";
+      context.fill();
+      context.strokeStyle = "#eee4df";
+      context.lineWidth = 2;
+      context.stroke();
+      context.fillStyle = "#191923";
+      context.font = "500 31px Manrope, Arial, sans-serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(label, x, controlY - 1);
+      context.textAlign = "left";
+      context.textBaseline = "alphabetic";
+    };
+    drawQuantityCircle(textX + 34, "−");
     context.fillStyle = "#191923";
-    context.font = "700 21px Manrope, Arial, sans-serif";
-    context.textAlign = "right";
-    context.fillText(formatCurrency(item.price * item.quantity), right, y);
+    context.font = "700 26px Manrope, Arial, sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(String(item.quantity), textX + 112, controlY);
     context.textAlign = "left";
-    y += itemHeight;
+    context.textBaseline = "alphabetic";
+    drawQuantityCircle(textX + 190, "+");
+
+    context.fillStyle = "#191923";
+    context.font = "700 29px Manrope, Arial, sans-serif";
+    context.textAlign = "right";
+    context.fillText(formatCurrency(item.price * item.quantity), right, y + 104);
+    context.textAlign = "left";
+
+    const dividerY = y + rowHeight - 22;
+    context.strokeStyle = "#eee5df";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(padding, dividerY);
+    context.lineTo(right, dividerY);
+    context.stroke();
   });
 
-  y += 12;
-  context.strokeStyle = "#eee5df";
-  context.beginPath();
-  context.moveTo(padding, y);
-  context.lineTo(right, y);
-  context.stroke();
-  y += 42;
   const subtotal = cartSubtotal();
-  const rows = [
-    ["Subtotal", formatCurrency(subtotal), false],
-    ["Delivery", formatCurrency(DELIVERY_FEE), false],
-    ["TOTAL", formatCurrency(subtotal + DELIVERY_FEE), true]
-  ];
-  rows.forEach(([label, amount, isTotal]) => {
-    context.fillStyle = isTotal ? "#f04f35" : "#686875";
-    context.font = `${isTotal ? "800 28px" : "600 21px"} Manrope, Arial, sans-serif`;
+  context.setLineDash([5, 6]);
+  context.strokeStyle = "#e9ded8";
+  context.beginPath();
+  context.moveTo(padding, summaryY);
+  context.lineTo(right, summaryY);
+  context.stroke();
+  context.setLineDash([]);
+
+  const drawTotalRow = (label, amount, y, isTotal = false) => {
+    context.fillStyle = isTotal ? "#f04f35" : "#555560";
+    context.font = `${isTotal ? "700 40px" : "500 30px"} Manrope, Arial, sans-serif`;
     context.fillText(label, padding, y);
+    context.fillStyle = isTotal ? "#f04f35" : "#191923";
+    context.font = `${isTotal ? "800 38px" : "700 30px"} Manrope, Arial, sans-serif`;
     context.textAlign = "right";
     context.fillText(amount, right, y);
     context.textAlign = "left";
-    y += isTotal ? 58 : 42;
-  });
+  };
+  drawTotalRow("Subtotal", formatCurrency(subtotal), summaryY + 60);
+  drawTotalRow("Delivery", formatCurrency(DELIVERY_FEE), summaryY + 120);
+  context.setLineDash([5, 6]);
+  context.strokeStyle = "#e9ded8";
+  context.beginPath();
+  context.moveTo(padding, summaryY + 150);
+  context.lineTo(right, summaryY + 150);
+  context.stroke();
+  context.setLineDash([]);
+  drawTotalRow("Total", formatCurrency(subtotal + DELIVERY_FEE), summaryY + 215, true);
 
-  y += 12;
   context.fillStyle = "#191923";
-  context.font = "800 20px Manrope, Arial, sans-serif";
-  context.fillText("DELIVERY DETAILS", padding, y);
-  y += 38;
-  context.font = "500 19px Manrope, Arial, sans-serif";
-  const detailLines = [
-    `Name: ${formData.get("customerName")}`,
-    `Phone: ${formData.get("customerPhone")}`,
-    ...addressLines
-  ];
-  detailLines.push(...notesLines);
-  detailLines.forEach(line => {
-    context.fillText(line, padding, y);
-    y += 32;
-  });
-  context.fillStyle = "#88838a";
-  context.font = "500 16px Manrope, Arial, sans-serif";
-  context.fillText("Thank you for ordering with Zesty!", padding, canvas.height - 82);
+  context.font = "700 24px Manrope, Arial, sans-serif";
+  context.fillText("DELIVERY DETAILS", padding, summaryY + 292);
+  context.fillStyle = "#555560";
+  context.font = "500 22px Manrope, Arial, sans-serif";
+  detailLines.forEach((line, index) => context.fillText(line, padding, summaryY + 334 + index * 38));
   return canvas;
 }
 
@@ -353,7 +420,7 @@ if (overlay) overlay.addEventListener("click", closeCart);
 
 const orderForm = document.getElementById("orderForm");
 if (orderForm) {
-  orderForm.addEventListener("submit", async event => {
+  orderForm.addEventListener("submit", event => {
     event.preventDefault();
     if (!cart.length) {
       showToast("Add at least one product before placing your order.");
@@ -363,25 +430,73 @@ if (orderForm) {
     const formData = new FormData(orderForm);
     try {
       const canvas = drawBill(formData);
-      const blob = await new Promise((resolve, reject) => {
-        canvas.toBlob(file => file ? resolve(file) : reject(new Error("The bill image could not be generated.")), "image/png");
+      pendingOrder = {
+        image: canvas.toDataURL("image/png"),
+        message: makeOrderMessage(formData)
+      };
+      billPreviewImage.src = pendingOrder.image;
+      billPreviewModal.classList.add("show");
+      billPreviewModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("locked");
+    } catch (error) {
+      console.error("Could not prepare the order bill.", error);
+      showToast("Could not create the bill preview. Please try again.");
+    }
+  });
+}
+
+const closeBillPreviewButton = document.getElementById("closeBillPreview");
+const downloadAndOpenWhatsAppButton = document.getElementById("downloadAndOpenWhatsApp");
+if (closeBillPreviewButton) closeBillPreviewButton.addEventListener("click", closeBillPreview);
+if (downloadAndOpenWhatsAppButton) {
+  downloadAndOpenWhatsAppButton.addEventListener("click", async () => {
+    if (!pendingOrder) {
+      showToast("Create a bill preview before continuing.");
+      return;
+    }
+
+    const whatsappWindow = window.open("about:blank", "_blank");
+    if (whatsappWindow) whatsappWindow.opener = null;
+    downloadAndOpenWhatsAppButton.disabled = true;
+    downloadAndOpenWhatsAppButton.textContent = "Uploading bill...";
+
+    try {
+      const response = await fetch("/api/receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: pendingOrder.image })
       });
-      const bill = new File([blob], `zesty-order-bill-${Date.now()}.png`, { type: "image/png" });
-      if (!navigator.share || !navigator.canShare || !navigator.canShare({ files: [bill] })) {
-        showToast("This browser can't share bill images. Open this page on a phone/browser that supports image sharing.");
-        return;
+      const contentType = response.headers.get("Content-Type") || "";
+      if (!contentType.includes("application/json")) {
+        if (response.status === 405) {
+          throw new Error("This server only serves static files. Stop Live Server and run `node dev-server.js` to enable hosted receipts.");
+        }
+        throw new Error(`Receipt server returned HTTP ${response.status}.`);
       }
 
-      await navigator.share({
-        files: [bill],
-        title: "Zesty order bill",
-        text: makeOrderMessage(formData)
-      });
-      showToast("Share menu closed. If you shared on WhatsApp, press Send there to place the order.");
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Receipt upload failed.");
+
+      const receiptUrl = new URL(result.receiptUrl);
+      const isLocalDevelopment = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+      const isExpectedOrigin = receiptUrl.origin === window.location.origin ||
+        (isLocalDevelopment && receiptUrl.protocol === "https:");
+      if (!isExpectedOrigin || !/^\/api\/receipt\?id=[a-f0-9]{32}$/.test(receiptUrl.pathname + receiptUrl.search)) {
+        throw new Error("Receipt service returned an invalid link.");
+      }
+
+      const message = `${pendingOrder.message}\n\nView your bill: ${receiptUrl.href}`;
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+      closeBillPreview();
+      if (whatsappWindow) whatsappWindow.location.href = whatsappUrl;
+      else window.location.href = whatsappUrl;
     } catch (error) {
-      if (error.name === "AbortError") return;
-      console.error("Could not prepare the order bill.", error);
-      showToast("Could not share the bill image. Please try again.");
+      if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
+      console.error("Could not upload the order bill.", error);
+      showToast(error.message || "Could not upload the bill. Please try again.");
+    } finally {
+      downloadAndOpenWhatsAppButton.disabled = false;
+      downloadAndOpenWhatsAppButton.innerHTML = "<span>◉</span> Upload Bill & Open WhatsApp";
     }
   });
 }

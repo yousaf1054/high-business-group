@@ -343,3 +343,25 @@ img { max-width: 100%; display: block; }
   .order-page-grid { grid-template-columns: 1fr; }
   .order-card { padding: 20px; }
 }
+
+.bill-preview-modal { display: none; position: fixed; inset: 0; z-index: 180; align-items: center; justify-content: center; padding: 16px; background: rgba(18, 18, 24, .62); }
+.bill-preview-modal.show { display: flex; }
+.bill-preview-dialog { width: min(620px, 100%); max-height: 92dvh; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px; background: white; box-shadow: 0 24px 80px rgba(0,0,0,.25); }
+.bill-preview-header { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 18px 22px 14px; border-bottom: 1px solid var(--line); }
+.bill-preview-header h2 { margin: 4px 0 0; font-size: 22px; }
+.bill-preview-close { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--ink); font-size: 24px; cursor: pointer; }
+.bill-preview-image-wrap { min-height: 0; overflow: auto; padding: 14px; background: #fff8f4; }
+.bill-preview-image-wrap img { display: block; width: min(100%, 500px); height: auto; margin: 0 auto; border: 1px solid #f0e7e2; border-radius: 12px; }
+.bill-preview-footer { flex: 0 0 auto; padding: 14px 22px 20px; }
+.bill-preview-footer p { margin: 0 0 12px; color: var(--muted); text-align: center; font-size: 11px; line-height: 1.5; }
+.bill-preview-footer .whatsapp-button { width: 100%; }
+.bill-preview-footer .receipt-public-note { color: #a53d2b; }
+.receipt-consent { display: flex !important; grid-template-columns: 18px 1fr; align-items: start; gap: 9px !important; padding: 11px 12px; border: 1px solid #f0e2da; border-radius: 9px; background: #fffaf7; color: #555 !important; font-size: 10px !important; line-height: 1.5; }
+.receipt-consent input { width: 16px; height: 16px; margin: 1px 0 0; accent-color: var(--orange); }
+
+@media (max-width: 480px) {
+  .bill-preview-modal { padding: 8px; }
+  .bill-preview-dialog { max-height: 96dvh; border-radius: 16px; }
+  .bill-preview-header { padding: 14px 16px 12px; }
+  .bill-preview-footer { padding: 12px 16px 16px; }
+}
